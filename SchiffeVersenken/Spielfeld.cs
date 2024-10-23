@@ -10,7 +10,7 @@ namespace SchiffeVersenken
     internal class Spielfeld
     {
 
-        public Spielfeld() 
+        public Spielfeld()
         {
 
         }
@@ -24,8 +24,6 @@ namespace SchiffeVersenken
         public ushort[,] guessField = new ushort[10, 10];
 
         private ushort[,] dumpPlayField = new ushort[10, 10];
-        private ushort[,] dumpGuessField = new ushort[10, 10];
-
         private void Initalitaion()
         {
             ships[0] = battleship;
@@ -46,12 +44,11 @@ namespace SchiffeVersenken
                     playField[outer, inner] = 0;
                     guessField[outer, inner] = 0;
                     dumpPlayField[outer, inner] = 0;
-                    dumpGuessField[outer, inner] = 0;
                 }
 
             }
 
-            PrintPlayfield(dumpPlayField, dumpGuessField);
+            PrintPlayfield(dumpPlayField, dumpPlayField);
             return;
 
         }
@@ -189,113 +186,128 @@ namespace SchiffeVersenken
                 string saveInput;
                 ushort x = 0;
                 ushort y = 0;
-                saveInput = Console.ReadLine();
-                try
+                bool error = true;
+                while (error)
                 {
-                    string[] parts = saveInput.Split('x');
-                    char firstPart = char.Parse(parts[0]);
-                    x = (ushort)firstPart;
-                    x -= 65;
-                    y = ushort.Parse(parts[1]);
-                    y--;
-                }
-                catch
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
-                    Console.ResetColor();
-                    Thread.Sleep(5000);
-                    ShipPlaceing();
-                }
-
-                Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
-                char direction = Console.ReadKey().KeyChar;
-                if (direction == 'W' || direction == 'E' || direction == 'S' || direction == 'N')
-                {
-                    switch (direction)
+                    saveInput = Console.ReadLine();
+                    saveInput.ToUpper();
+                    try
                     {
-                        case 'W':
-                            try
-                            {
-                                for (short west = 0; west < ships[shipCount].GetLength(); west++)
-                                { 
-                                    playField[x, y + west] = 1;
-                                }
-                                PrintPlayfield(dumpPlayField, dumpGuessField);
-                                break;
-                            }
-                            catch 
-                            {
-                                Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
-                                Thread.Sleep(5000);
-                                ShipPlaceing();
-                                break;
-                            }
-                        case 'E':
-                            try
-                            {
-                                for (short east = 0; east < ships[shipCount].GetLength(); east++)
-                                {
-                                    playField[x, y - east] = 1;
-                                }
-                                PrintPlayfield(dumpPlayField, dumpGuessField);
-                                break;
-                            }
-                            catch
-                            {
-                                Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
-                                Thread.Sleep(5000);
-                                ShipPlaceing();
-                                break;
-                            }
-                        case 'S':
-                            try
-                            {
-                                for (short south = 0; south < ships[shipCount].GetLength(); south++)
-                                {
-                                    playField[x + south, y] = 1;
-                                }
-                                PrintPlayfield(dumpPlayField, dumpGuessField);
-                                break;
-                            }
-                            catch
-                            {
-                                Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
-                                Thread.Sleep(5000);
-                                ShipPlaceing();
-                                break;
-                            }
-                        case 'N':
-                            try
-                            {
-                                for (short north = 0; north < ships[shipCount].GetLength(); north++)
-                                {
-                                    playField[x - north, y] = 1;
-                                }
-                                PrintPlayfield(dumpPlayField, dumpGuessField);
-                                break;
-                            }
-                            catch
-                            {
-                                Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
-                                Thread.Sleep(5000);
-                                ShipPlaceing();
-                                break;
-                            2}
-
+                        string[] parts = saveInput.Split('x');
+                        char firstPart = char.Parse(parts[0]);
+                        firstPart = Char.ToUpper(firstPart);
+                        x = (ushort)firstPart;
+                        x -= 65;
+                        y = ushort.Parse(parts[1]);
+                        y--;
+                        error = false;
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
+                        Console.ResetColor();
+                        Thread.Sleep(5000);
                     }
 
                 }
-                else
+
+                bool innerError = true;
+                while (innerError)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Wrong input, your location was leaked to Google Maps and you have to redo the entire process! :P");
-                    Console.ResetColor();
-                    Thread.Sleep(5000);
-                    ShipPlaceing();
+                    Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
+                    char direction = Console.ReadKey().KeyChar;
+                    direction = Char.ToUpper(direction);
+                    Console.WriteLine(direction);
+
+                    if (direction == 'W' || direction == 'E' || direction == 'S' || direction == 'N')
+                    {
+                        switch (direction)
+                        {
+                            case 'W':
+                                try
+                                {
+                                    for (short west = 0; west < ships[shipCount].GetLength(); west++)
+                                    {
+                                        playField[x, y + west] = 1;
+                                    }
+                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    innerError = false;
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
+                                    Thread.Sleep(5000);
+                                }
+
+                                break;
+                            case 'E':
+                                try
+                                {
+                                    for (short east = 0; east < ships[shipCount].GetLength(); east++)
+                                    {
+                                        playField[x, y - east] = 1;
+                                    }
+                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    innerError = false;
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                    Thread.Sleep(5000);
+                                }
+
+                                break;
+                            case 'S':
+                                try
+                                {
+                                    for (short south = 0; south < ships[shipCount].GetLength(); south++)
+                                    {
+                                        playField[x + south, y] = 1;
+                                    }
+                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    innerError = false;
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
+                                    Thread.Sleep(5000);
+                                }
+
+                                break;
+                            case 'N':
+                                try
+                                {
+                                    for (short north = 0; north < ships[shipCount].GetLength(); north++)
+                                    {
+                                        playField[x - north, y] = 1;
+                                    }
+                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    innerError = false;
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                    Thread.Sleep(5000);
+                                }
+
+                                break;
+                        }
+
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Wrong input, your location was leaked to Google Maps and you have to redo the entire process! :P");
+                        Console.ResetColor();
+                        Thread.Sleep(5000);
+                        shipCount--;
+                    }
+
                 }
 
             }
+
         }
 
         public void Guessing(ushort[,] enemyField, ushort[,] enemyGuesses)
