@@ -16,13 +16,12 @@ namespace SchiffeVersenken
         {
             Length = length;
             Name = name;
-
+            health = Length;
         }
 
         private ushort Length { get; set; }
         private string Name { get; set; }
-        private ushort Direction { get; set; }
-        private ushort Location { get; set; }
+        public int health { get; set; }
 
         public string GetName()
         {

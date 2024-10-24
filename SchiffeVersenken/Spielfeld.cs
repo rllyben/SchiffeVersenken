@@ -4,6 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using NAudio.Wave;
 
 namespace SchiffeVersenken
 {
@@ -90,7 +92,7 @@ namespace SchiffeVersenken
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (enemyPlayField[outer, inner] == 1 && guessField[outer, inner] == 1)
+                    else if (enemyPlayField[outer, inner] != 0 && guessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.Red;
                         Console.Write("  ");
@@ -138,7 +140,7 @@ namespace SchiffeVersenken
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] == 1 && enemyGuessField[outer, inner] == 0)
+                    else if (playField[outer, inner] != 0 && enemyGuessField[outer, inner] == 0)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGray;
                         Console.Write("  ");
@@ -150,7 +152,7 @@ namespace SchiffeVersenken
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] == 1 && enemyGuessField[outer, inner] == 1)
+                    else if (playField[outer, inner] != 0 && enemyGuessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGray;
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -167,8 +169,13 @@ namespace SchiffeVersenken
 
                 }
                 Console.WriteLine();
-            }
 
+                if (false)
+                {
+
+                }
+
+            }
             return;
         }
 
@@ -207,7 +214,10 @@ namespace SchiffeVersenken
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
                         Console.ResetColor();
-                        Thread.Sleep(5000);
+                        var psi = new ProcessStartInfo("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+                        psi.Arguments = "https://www.youtube.com/watch?v=12doxFJo778&pp=ygUecmFpZCBzaGFkb3cgbGVnZW5kcyBzcG9uc29yIGFk";
+                        Process.Start(psi);
+
                     }
 
                 }
@@ -229,7 +239,7 @@ namespace SchiffeVersenken
                                 {
                                     for (short west = 0; west < ships[shipCount].GetLength(); west++)
                                     {
-                                        playField[x, y + west] = 1;
+                                        playField[x, y + west] = (ushort)(shipCount + 1);
                                     }
                                     PrintPlayfield(dumpPlayField, dumpPlayField);
                                     innerError = false;
@@ -246,7 +256,7 @@ namespace SchiffeVersenken
                                 {
                                     for (short east = 0; east < ships[shipCount].GetLength(); east++)
                                     {
-                                        playField[x, y - east] = 1;
+                                        playField[x, y - east] = (ushort)(shipCount + 1);
                                     }
                                     PrintPlayfield(dumpPlayField, dumpPlayField);
                                     innerError = false;
@@ -263,7 +273,7 @@ namespace SchiffeVersenken
                                 {
                                     for (short south = 0; south < ships[shipCount].GetLength(); south++)
                                     {
-                                        playField[x + south, y] = 1;
+                                        playField[x + south, y] = (ushort)(shipCount + 1);
                                     }
                                     PrintPlayfield(dumpPlayField, dumpPlayField);
                                     innerError = false;
@@ -280,7 +290,7 @@ namespace SchiffeVersenken
                                 {
                                     for (short north = 0; north < ships[shipCount].GetLength(); north++)
                                     {
-                                        playField[x - north, y] = 1;
+                                        playField[x - north, y] = (ushort)(shipCount + 1);
                                     }
                                     PrintPlayfield(dumpPlayField, dumpPlayField);
                                     innerError = false;
@@ -289,8 +299,7 @@ namespace SchiffeVersenken
                                 {
                                     Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
                                     Thread.Sleep(5000);
-                                }
-
+                                } 
                                 break;
                         }
 
@@ -338,6 +347,8 @@ namespace SchiffeVersenken
             }
 
             guessField[x, y] = 1;
+
+            if (false) ;
             return;
         }
 
