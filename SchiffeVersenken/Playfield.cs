@@ -9,53 +9,54 @@ using NAudio.Wave;
 
 namespace SchiffeVersenken
 {
-    internal class Spielfeld
+    internal class Playfield
     {
+        Ships battleship = new Ships(5, "battleship");
+        Ships cruiser1 = new Ships(4, "cruiser");
+        Ships cruiser2 = new Ships(4, "cruiser");
+        Ships destroyer1 = new Ships(3, "destroyer");
+        Ships destroyer2 = new Ships(3, "destroyer");
+        Ships destroyer3 = new Ships(3, "destroyer");
+        Ships UBoat1 = new Ships(2, "U-Boat");
+        Ships UBoat2 = new Ships(2, "U-Boat");
+        Ships UBoat3 = new Ships(2, "U-Boat");
+        Ships UBoat4 = new Ships(2, "U-Boat");
+        Ships Empty = new Ships(0, "Nothing");
 
-        public Spielfeld()
-        {
-
-        }
-        Schiff battleship = new Schiff(5, "battleship");
-        Schiff cruiser = new Schiff(4, "cruiser");
-        Schiff destroyer = new Schiff(3, "destroyer");
-        Schiff UBoat = new Schiff(2, "U-Boat");
-
-        private Schiff[] ships = new Schiff[10];
-        public ushort[,] playField = new ushort[10, 10];
+        private Ships[] ships = new Ships[10];
+        public Ships[,] playField = new Ships[10, 10];
         public ushort[,] guessField = new ushort[10, 10];
+        private int sunkenShips = 0;
 
-        private ushort[,] dumpPlayField = new ushort[10, 10];
+        private Ships[,] dumpPlayField = new Ships[10, 10];
         private void Initalitaion()
         {
             ships[0] = battleship;
-            ships[1] = cruiser;
-            ships[2] = cruiser;
-            ships[3] = destroyer;
-            ships[4] = destroyer;
-            ships[5] = destroyer;
-            ships[6] = UBoat;
-            ships[7] = UBoat;
-            ships[8] = UBoat;
-            ships[9] = UBoat;
+            ships[1] = cruiser1;
+            ships[2] = cruiser2;
+            ships[3] = destroyer1;
+            ships[4] = destroyer2;
+            ships[5] = destroyer3;
+            ships[6] = UBoat1;
+            ships[7] = UBoat2;
+            ships[8] = UBoat3;
+            ships[9] = UBoat4;
 
             for (int outer = 0; outer < 10; outer++)
             {
                 for (int inner = 0; inner < 10; inner++)
                 {
-                    playField[outer, inner] = 0;
+                    playField[outer, inner] = Empty;
                     guessField[outer, inner] = 0;
-                    dumpPlayField[outer, inner] = 0;
+                    dumpPlayField[outer, inner] = Empty;
                 }
 
             }
-
-            PrintPlayfield(dumpPlayField, dumpPlayField);
+            PrintPlayfield(dumpPlayField, guessField);
             return;
-
         }
 
-        public void PrintPlayfield(ushort[,] enemyPlayField, ushort[,] enemyGuessField)
+        public void PrintPlayfield(Ships[,] enemyPlayField, ushort[,] enemyGuessField)
         {
             Console.Clear();
             Console.WriteLine("Gegnerisches Feld");
@@ -86,13 +87,13 @@ namespace SchiffeVersenken
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (enemyPlayField[outer, inner] == 0 && guessField[outer, inner] == 1)
+                    else if (enemyPlayField[outer, inner] == Empty && guessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.Blue;
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (enemyPlayField[outer, inner] != 0 && guessField[outer, inner] == 1)
+                    else if (enemyPlayField[outer, inner] != Empty && guessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.Red;
                         Console.Write("  ");
@@ -134,25 +135,25 @@ namespace SchiffeVersenken
                         Console.Write(inner + 1 + " ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] == 0 && enemyGuessField[outer, inner] == 0)
+                    else if (playField[outer, inner] == Empty && enemyGuessField[outer, inner] == 0)
                     {
                         Console.BackgroundColor = ConsoleColor.Blue;
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] != 0 && enemyGuessField[outer, inner] == 0)
+                    else if (playField[outer, inner] != Empty && enemyGuessField[outer, inner] == 0)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGray;
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] == 0 && enemyGuessField[outer, inner] == 1)
+                    else if (playField[outer, inner] == Empty && enemyGuessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkBlue;
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (playField[outer, inner] != 0 && enemyGuessField[outer, inner] == 1)
+                    else if (playField[outer, inner] != Empty && enemyGuessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGray;
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -169,12 +170,6 @@ namespace SchiffeVersenken
 
                 }
                 Console.WriteLine();
-
-                if (false)
-                {
-
-                }
-
             }
             return;
         }
@@ -188,14 +183,15 @@ namespace SchiffeVersenken
 
             for (ushort shipCount = 0; shipCount < 10; shipCount++)
             {
-                Console.WriteLine($"Set your {ships[shipCount].GetName()}");
-                Console.WriteLine($"Please write the start Coordinate (Ax2)");
-                string saveInput;
                 ushort x = 0;
                 ushort y = 0;
-                bool error = true;
-                while (error)
+                bool error = false;
+                do
                 {
+
+                    Console.WriteLine($"Set your {ships[shipCount].GetName()}");
+                    Console.WriteLine($"Please write the start Coordinate (Ax2)");
+                    string saveInput;
                     saveInput = Console.ReadLine();
                     saveInput.ToUpper();
                     try
@@ -207,6 +203,9 @@ namespace SchiffeVersenken
                         x -= 65;
                         y = ushort.Parse(parts[1]);
                         y--;
+
+                        if (x > 10 || y > 10 || playField[x, y] != Empty)
+                            throw new Exception("Out of bounds");
                         error = false;
                     }
                     catch
@@ -217,13 +216,13 @@ namespace SchiffeVersenken
                         var psi = new ProcessStartInfo("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
                         psi.Arguments = "https://www.youtube.com/watch?v=12doxFJo778&pp=ygUecmFpZCBzaGFkb3cgbGVnZW5kcyBzcG9uc29yIGFk";
                         Process.Start(psi);
-
+                        error = true;
                     }
 
-                }
+                } while (error);
 
-                bool innerError = true;
-                while (innerError)
+                bool innerError = false;
+                do
                 {
                     Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
                     char direction = Console.ReadKey().KeyChar;
@@ -239,67 +238,88 @@ namespace SchiffeVersenken
                                 {
                                     for (short west = 0; west < ships[shipCount].GetLength(); west++)
                                     {
-                                        playField[x, y + west] = (ushort)(shipCount + 1);
+                                        if (playField[x, y - west] != Empty)
+                                            throw new Exception("Not an empty Space!");
                                     }
-                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    for (short west = 0; west < ships[shipCount].GetLength(); west++)
+                                    {
+                                        playField[x, y - west] = ships[shipCount];
+                                    }
+                                    PrintPlayfield(dumpPlayField, guessField);
                                     innerError = false;
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
                                     Thread.Sleep(5000);
+                                    innerError = true;
                                 }
-
                                 break;
                             case 'E':
                                 try
                                 {
                                     for (short east = 0; east < ships[shipCount].GetLength(); east++)
                                     {
-                                        playField[x, y - east] = (ushort)(shipCount + 1);
+                                        if (playField[x, y + east] != Empty)
+                                            throw new Exception("Not an empty Space!");
                                     }
-                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    for (short east = 0; east < ships[shipCount].GetLength(); east++)
+                                    {
+                                        playField[x, y + east] = ships[shipCount];
+                                    }
+                                    PrintPlayfield(dumpPlayField, guessField);
                                     innerError = false;
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
                                     Thread.Sleep(5000);
+                                    innerError = true;
                                 }
-
                                 break;
                             case 'S':
                                 try
                                 {
                                     for (short south = 0; south < ships[shipCount].GetLength(); south++)
                                     {
-                                        playField[x + south, y] = (ushort)(shipCount + 1);
+                                        if (playField[x + south, y] != Empty)
+                                            throw new Exception("Not an empty Space!");
                                     }
-                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    for (short south = 0; south < ships[shipCount].GetLength(); south++)
+                                    {
+                                        playField[x + south, y] = ships[shipCount];
+                                    }
+                                    PrintPlayfield(dumpPlayField, guessField);
                                     innerError = false;
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
                                     Thread.Sleep(5000);
+                                    innerError = true;
                                 }
-
                                 break;
                             case 'N':
                                 try
                                 {
                                     for (short north = 0; north < ships[shipCount].GetLength(); north++)
                                     {
-                                        playField[x - north, y] = (ushort)(shipCount + 1);
+                                        if (playField[x - north, y] != Empty)
+                                            throw new Exception("Not an empty Space!");
                                     }
-                                    PrintPlayfield(dumpPlayField, dumpPlayField);
+                                    for (short north = 0; north < ships[shipCount].GetLength(); north++)
+                                    {
+                                        playField[x - north, y] = ships[shipCount];
+                                    }
+                                    PrintPlayfield(dumpPlayField, guessField);
                                     innerError = false;
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
                                     Thread.Sleep(5000);
-                                } 
+                                    innerError = true;
+                                }
                                 break;
                         }
 
@@ -313,13 +333,13 @@ namespace SchiffeVersenken
                         shipCount--;
                     }
 
-                }
+                } while (innerError);
 
             }
 
         }
 
-        public void Guessing(ushort[,] enemyField, ushort[,] enemyGuesses)
+        public void Guessing(Ships[,] enemyField, ushort[,] enemyGuesses)
         {
             PrintPlayfield(enemyField, enemyGuesses);
 
@@ -327,29 +347,51 @@ namespace SchiffeVersenken
             string saveInput;
             ushort x = 0;
             ushort y = 0;
-            saveInput = Console.ReadLine();
-            try
+            bool error = false;
+            do
             {
-                string[] parts = saveInput.Split('x');
-                char firstPart = char.Parse(parts[0]);
-                x = (ushort)firstPart;
-                x -= 65;
-                y = ushort.Parse(parts[1]);
-                y--;
-            }
-            catch
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
-                Console.ResetColor();
-                Thread.Sleep(5000);
-                Guessing(enemyField, enemyGuesses);
-            }
+                try
+                {
 
-            guessField[x, y] = 1;
+                    saveInput = Console.ReadLine();
+                    string[] parts = saveInput.Split('x');
+                    char firstPart = char.Parse(parts[0]);
+                    firstPart = Char.ToUpper(firstPart);
+                    x = (ushort)firstPart;
+                    x -= 65;
+                    y = ushort.Parse(parts[1]);
+                    y--;
 
-            if (false) ;
-            return;
+                    if (guessField[x, y] != 0)
+                        throw new Exception("Allready Guessed");
+                    guessField[x, y] = 1;
+
+                    enemyField[x, y].LooseHealth();
+                    if (enemyField[x, y].health == 0)
+                    {
+                        Console.WriteLine($"You sank an {enemyField[x, y].GetName()}!");
+                        Thread.Sleep(1000);
+                        sunkenShips++;
+                    }
+                    if (sunkenShips == 10)
+                    {
+                        Console.WriteLine("GZ! You won the Game!");
+                        Program.gameStart = false;
+                        Console.ReadKey();
+                    }
+                    error = false;
+                }
+                catch
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
+                    Console.ResetColor();
+                    Thread.Sleep(5000);
+                    error = true;
+                }
+
+            } while (error);
+
         }
 
     }

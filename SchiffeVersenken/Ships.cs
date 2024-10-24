@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace SchiffeVersenken
 {
-    internal class Schiff
+    internal class Ships
     {
 
         // Orientierung
         // Startkoordinate
         // Länge
-        public Schiff(ushort length, string name)
+        public Ships(ushort length, string name)
         {
             Length = length;
             Name = name;
@@ -33,6 +33,10 @@ namespace SchiffeVersenken
             return Length;
         }
 
+        public void LooseHealth()
+        {
+            health--;
+        }
 
     }
 
