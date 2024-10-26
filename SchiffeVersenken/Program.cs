@@ -42,13 +42,14 @@ namespace SchiffeVersenken
             host.ShipPlaceing(1);
             PrintTitle();
             client.RemoteShipPlaceing(2);
+            gameStart = true;
 
             while (gameStart)
             {
                 PrintTitle();
-                host.Guessing(client.playField, client.guessField);
+                host.Guessing(1, client.playField, client.guessField);
                 PrintTitle();
-                client.RemoteGuessing(2, host.playField, host.guessField);
+                client.RemoteGuessing(1, host.playField, host.guessField);
             }
 
         }
@@ -56,15 +57,16 @@ namespace SchiffeVersenken
         {
             PrintTitle();
             host.RemoteShipPlaceing(1);
+            PrintTitle();
+            client.ShipPlaceing(2);
+            gameStart = true;
 
             while (gameStart)
             {
                 PrintTitle();
-                client.ShipPlaceing(2);
+                host.RemoteGuessing(2, client.playField, client.guessField);
                 PrintTitle();
-                host.RemoteGuessing(1, client.playField, client.guessField);
-                PrintTitle();
-                client.Guessing(host.playField, client.guessField);
+                client.Guessing(2, host.playField, host.guessField);
             }
 
         }
@@ -81,16 +83,17 @@ namespace SchiffeVersenken
             Playfield player2 = new Playfield();
             player2.ShipPlaceing(0);
             Console.Clear();
+            gameStart = true;
 
             while (gameStart)
             {
                 PrintTitle();
                 Console.WriteLine("Player 1s Turn");
                 Console.ReadKey();
-                player1.Guessing(player2.playField, player2.guessField);
+                player1.Guessing(0, player2.playField, player2.guessField);
                 Console.WriteLine("Player 2s Turn");
                 Console.ReadKey();
-                player2.Guessing(player1.playField, player1.guessField);
+                player2.Guessing(0, player1.playField, player1.guessField);
             }
 
         }

@@ -87,7 +87,7 @@ namespace SchiffeVersenken
                         Console.Write("  ");
                         Console.ResetColor();
                     }
-                    else if (enemyPlayField[outer, inner] == Empty && guessField[outer, inner] == 1)
+                    else if (enemyPlayField[outer, inner].GetName() == "Nothing" && guessField[outer, inner] == 1)
                     {
                         Console.BackgroundColor = ConsoleColor.Blue;
                         Console.Write("  ");
@@ -187,155 +187,159 @@ namespace SchiffeVersenken
                 ushort x = 0;
                 ushort y = 0;
                 bool error = false;
+                bool innerError = false;
                 string saveInput;
                 char direction;
                 do
                 {
-
-                    Console.WriteLine($"Set your {ships[shipCount].GetName()}");
-                    Console.WriteLine($"Please write the start Coordinate (Ax2)");
-                    saveInput = Console.ReadLine();
-                    saveInput.ToUpper();
-                    try
+                    do
                     {
-                        string[] parts = saveInput.Split('x');
-                        char firstPart = char.Parse(parts[0]);
-                        firstPart = Char.ToUpper(firstPart);
-                        x = (ushort)firstPart;
-                        x -= 65;
-                        y = ushort.Parse(parts[1]);
-                        y--;
 
-                        if (x > 10 || y > 10 || playField[x, y] != Empty)
-                            throw new Exception("Out of bounds");
-                        error = false;
-                    }
-                    catch
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
-                        Console.ResetColor();
-                        var psi = new ProcessStartInfo("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
-                        psi.Arguments = "https://www.youtube.com/watch?v=12doxFJo778&pp=ygUecmFpZCBzaGFkb3cgbGVnZW5kcyBzcG9uc29yIGFk";
-                        Process.Start(psi);
-                        error = true;
-                    }
-
-                } while (error);
-
-                bool innerError = false;
-                do
-                {
-                    Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
-                    direction = Console.ReadKey().KeyChar;
-                    direction = Char.ToUpper(direction);
-                    Console.WriteLine(direction);
-
-                    if (direction == 'W' || direction == 'E' || direction == 'S' || direction == 'N')
-                    {
-                        switch (direction)
+                        Console.WriteLine($"Set your {ships[shipCount].GetName()}");
+                        Console.WriteLine($"Please write the start Coordinate (Ax2)");
+                        saveInput = Console.ReadLine();
+                        saveInput.ToUpper();
+                        try
                         {
-                            case 'W':
-                                try
-                                {
-                                    for (short west = 0; west < ships[shipCount].GetLength(); west++)
-                                    {
-                                        if (playField[x, y - west] != Empty)
-                                            throw new Exception("Not an empty Space!");
-                                    }
-                                    for (short west = 0; west < ships[shipCount].GetLength(); west++)
-                                    {
-                                        playField[x, y - west] = ships[shipCount];
-                                    }
-                                    PrintPlayfield(dumpPlayField, guessField);
-                                    innerError = false;
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
-                                    Thread.Sleep(5000);
-                                    innerError = true;
-                                }
-                                break;
-                            case 'E':
-                                try
-                                {
-                                    for (short east = 0; east < ships[shipCount].GetLength(); east++)
-                                    {
-                                        if (playField[x, y + east] != Empty)
-                                            throw new Exception("Not an empty Space!");
-                                    }
-                                    for (short east = 0; east < ships[shipCount].GetLength(); east++)
-                                    {
-                                        playField[x, y + east] = ships[shipCount];
-                                    }
-                                    PrintPlayfield(dumpPlayField, guessField);
-                                    innerError = false;
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
-                                    Thread.Sleep(5000);
-                                    innerError = true;
-                                }
-                                break;
-                            case 'S':
-                                try
-                                {
-                                    for (short south = 0; south < ships[shipCount].GetLength(); south++)
-                                    {
-                                        if (playField[x + south, y] != Empty)
-                                            throw new Exception("Not an empty Space!");
-                                    }
-                                    for (short south = 0; south < ships[shipCount].GetLength(); south++)
-                                    {
-                                        playField[x + south, y] = ships[shipCount];
-                                    }
-                                    PrintPlayfield(dumpPlayField, guessField);
-                                    innerError = false;
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
-                                    Thread.Sleep(5000);
-                                    innerError = true;
-                                }
-                                break;
-                            case 'N':
-                                try
-                                {
-                                    for (short north = 0; north < ships[shipCount].GetLength(); north++)
-                                    {
-                                        if (playField[x - north, y] != Empty)
-                                            throw new Exception("Not an empty Space!");
-                                    }
-                                    for (short north = 0; north < ships[shipCount].GetLength(); north++)
-                                    {
-                                        playField[x - north, y] = ships[shipCount];
-                                    }
-                                    PrintPlayfield(dumpPlayField, guessField);
-                                    innerError = false;
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
-                                    Thread.Sleep(5000);
-                                    innerError = true;
-                                }
-                                break;
+                            string[] parts = saveInput.Split('x');
+                            char firstPart = char.Parse(parts[0]);
+                            firstPart = Char.ToUpper(firstPart);
+                            x = (ushort)firstPart;
+                            x -= 65;
+                            y = ushort.Parse(parts[1]);
+                            y--;
+
+                            if (x > 10 || y > 10 || playField[x, y] != Empty)
+                                throw new Exception("Out of bounds");
+                            error = false;
+                        }
+                        catch
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Wrong input, have fun doing it all again after a short word from our sponsor! :P");
+                            Console.ResetColor();
+                            var psi = new ProcessStartInfo("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+                            psi.Arguments = "https://www.youtube.com/watch?v=12doxFJo778&pp=ygUecmFpZCBzaGFkb3cgbGVnZW5kcyBzcG9uc29yIGFk";
+                            Process.Start(psi);
+                            error = true;
                         }
 
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Wrong input, your location was leaked to Google Maps and you have to redo the entire process! :P");
-                        Console.ResetColor();
-                        Thread.Sleep(5000);
-                        shipCount--;
-                    }
+                    } while (error);
 
-                } while (innerError);
+                    do
+                    {
+                        Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
+                        direction = Console.ReadKey().KeyChar;
+                        direction = Char.ToUpper(direction);
+                        Console.WriteLine(direction);
+
+                        if (direction == 'W' || direction == 'E' || direction == 'S' || direction == 'N')
+                        {
+                            switch (direction)
+                            {
+                                case 'W':
+                                    try
+                                    {
+                                        for (short west = 0; west < ships[shipCount].GetLength(); west++)
+                                        {
+                                            if (playField[x, y - west] != Empty)
+                                                throw new Exception("Not an empty Space!");
+                                        }
+                                        for (short west = 0; west < ships[shipCount].GetLength(); west++)
+                                        {
+                                            playField[x, y - west] = ships[shipCount];
+                                        }
+                                        PrintPlayfield(dumpPlayField, guessField);
+                                        innerError = false;
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
+                                        Thread.Sleep(5000);
+                                        innerError = true;
+                                    }
+                                    break;
+                                case 'E':
+                                    try
+                                    {
+                                        for (short east = 0; east < ships[shipCount].GetLength(); east++)
+                                        {
+                                            if (playField[x, y + east] != Empty)
+                                                throw new Exception("Not an empty Space!");
+                                        }
+                                        for (short east = 0; east < ships[shipCount].GetLength(); east++)
+                                        {
+                                            playField[x, y + east] = ships[shipCount];
+                                        }
+                                        PrintPlayfield(dumpPlayField, guessField);
+                                        innerError = false;
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                        Thread.Sleep(5000);
+                                        innerError = true;
+                                    }
+                                    break;
+                                case 'S':
+                                    try
+                                    {
+                                        for (short south = 0; south < ships[shipCount].GetLength(); south++)
+                                        {
+                                            if (playField[x + south, y] != Empty)
+                                                throw new Exception("Not an empty Space!");
+                                        }
+                                        for (short south = 0; south < ships[shipCount].GetLength(); south++)
+                                        {
+                                            playField[x + south, y] = ships[shipCount];
+                                        }
+                                        PrintPlayfield(dumpPlayField, guessField);
+                                        innerError = false;
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
+                                        Thread.Sleep(5000);
+                                        innerError = true;
+                                    }
+                                    break;
+                                case 'N':
+                                    try
+                                    {
+                                        for (short north = 0; north < ships[shipCount].GetLength(); north++)
+                                        {
+                                            if (playField[x - north, y] != Empty)
+                                                throw new Exception("Not an empty Space!");
+                                        }
+                                        for (short north = 0; north < ships[shipCount].GetLength(); north++)
+                                        {
+                                            playField[x - north, y] = ships[shipCount];
+                                        }
+                                        PrintPlayfield(dumpPlayField, guessField);
+                                        innerError = false;
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                        Thread.Sleep(5000);
+                                        innerError = true;
+                                    }
+                                    break;
+                            }
+
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Wrong input, your location was leaked to Google Maps and you have to redo the entire process! :P");
+                            Console.ResetColor();
+                            Thread.Sleep(5000);
+                            shipCount--;
+                        }
+
+                    } while (innerError);
+
+                } while (error || innerError);
                 if (mode == 1)
                 {
                     Host.HostShipPlaceing(saveInput, direction);
@@ -350,7 +354,7 @@ namespace SchiffeVersenken
         }
 
         public void RemoteShipPlaceing(byte mode)
-        { 
+        {
             Initalitaion();
             if (mode == 1)
                 Console.WriteLine("Waiting for Host to place Ships...");
@@ -414,12 +418,12 @@ namespace SchiffeVersenken
         }
 
 
-        public void Guessing(Ships[,] enemyField, ushort[,] enemyGuesses)
+        public void Guessing(byte mode, Ships[,] enemyField, ushort[,] enemyGuesses)
         {
             PrintPlayfield(enemyField, enemyGuesses);
 
             Console.WriteLine("Plese enter the cooridnates you want to shoot at");
-            string saveInput;
+            string saveInput = "";
             ushort x = 0;
             ushort y = 0;
             bool error = false;
@@ -427,7 +431,6 @@ namespace SchiffeVersenken
             {
                 try
                 {
-
                     saveInput = Console.ReadLine();
                     string[] parts = saveInput.Split('x');
                     char firstPart = char.Parse(parts[0]);
@@ -466,7 +469,10 @@ namespace SchiffeVersenken
                 }
 
             } while (error);
-
+            if (mode == 1)
+                Host.HostPlaying(saveInput);
+            else if (mode == 2)
+                Client.ClientPlaying(saveInput);
         }
 
         public void RemoteGuessing(byte mode, Ships[,] enemyField, ushort[,] enemyGuesses)
@@ -505,7 +511,7 @@ namespace SchiffeVersenken
                 Program.gameStart = false;
                 Console.ReadKey();
             }
-            
+
         }
 
     }

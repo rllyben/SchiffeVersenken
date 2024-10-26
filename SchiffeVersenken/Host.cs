@@ -46,6 +46,8 @@ namespace SchiffeVersenken
                 int received = stream.Read(buffer);
 
                 var clientMessage = Encoding.UTF8.GetString(buffer, 0, received);
+                var backTest = Encoding.UTF8.GetBytes(clientMessage);
+                stream.Write(backTest);
 
                 IPAddress clientAddress = IPAddress.Parse(clientMessage);
                 clientPlayer = new(clientAddress, port);
@@ -53,7 +55,7 @@ namespace SchiffeVersenken
             }
             finally
             {
-                Console.WriteLine("Player 2 connected successfully!");
+                Console.WriteLine("Client connected successfully!");
                 Thread.Sleep(1000);
                 Program.HostPlay();
             }
@@ -73,71 +75,32 @@ namespace SchiffeVersenken
             }
             catch
             {
-                Console.WriteLine("Something went wrong! Player 2 disconnected?");
+                Console.WriteLine("Something went wrong! Client disconnected?");
                 Thread.Sleep(1000);
-                while (true)
-                {
-                    try
-                    {
-                        using NetworkStream stream = handler.GetStream();
-
-                        string allInput = ownPlaceing + "x" + ownDirection;
-
-                        var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
-                        stream.Write(connectionTestBytes);
-                    }
-                    catch
-                    {
-                        Thread.Sleep(500);
-                    }
-
-                }
-
             }
 
         }
-        public static void ClientPlaceing(string ownInput)
+        public static void HostPlaying(string hostGuess)
         {
             using TcpClient handler = listener.AcceptTcpClient();
             try
             {
                 using NetworkStream stream = handler.GetStream();
 
-                string allInput = ownInput;
-
-                var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
+                var connectionTestBytes = Encoding.UTF8.GetBytes(hostGuess);
                 stream.Write(connectionTestBytes);
             }
             catch
             {
-                Console.WriteLine("Something went wrong! Player 2 disconnected?");
+                Console.WriteLine("Something went wrong! Client disconnected?");
                 Thread.Sleep(1000);
-                while (true)
-                {
-                    try
-                    {
-                        using NetworkStream stream = handler.GetStream();
-
-                        string allInput = ownInput;
-
-                        var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
-                        stream.Write(connectionTestBytes);
-                    }
-                    catch
-                    {
-                        Thread.Sleep(500);
-                    }
-
-                }
-
             }
 
         }
         public static string ClientPlaying()
         {
-            using TcpClient client = new();
-            client.Connect(clientPlayer);
-            using NetworkStream stream = client.GetStream();
+            using TcpClient handler = listener.AcceptTcpClient();
+            using NetworkStream stream = handler.GetStream();
 
             var buffer = new byte[1024];
             int received = stream.Read(buffer);

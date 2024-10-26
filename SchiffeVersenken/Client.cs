@@ -57,6 +57,7 @@ namespace SchiffeVersenken
 
                     if (hostTest == localIpAddress.ToString())
                     {
+                        listener = new(hostPlayer);
                         Console.WriteLine("Connected successfully to Host");
                         Thread.Sleep(1000);
                     }
@@ -90,49 +91,13 @@ namespace SchiffeVersenken
 
             return hostInput;
         }
-        public static void ClientPlaying(string ownInput)
-        {
-            using TcpClient handler = listener.AcceptTcpClient();
-            try
-            {
-                using NetworkStream stream = handler.GetStream();
-
-                string allInput = ownInput;
-
-                var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
-                stream.Write(connectionTestBytes);
-            }
-            catch
-            {
-                Console.WriteLine("Something went wrong! Player 2 disconnected?");
-                Thread.Sleep(1000);
-                while (true)
-                {
-                    try
-                    {
-                        using NetworkStream stream = handler.GetStream();
-
-                        string allInput = ownInput;
-
-                        var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
-                        stream.Write(connectionTestBytes);
-                    }
-                    catch
-                    {
-                        Thread.Sleep(500);
-                    }
-
-                }
-
-            }
-
-        }
         public static void ClientPlaceing(string ownPlaceing, char ownDirection)
         {
-            using TcpClient handler = listener.AcceptTcpClient();
             try
             {
-                using NetworkStream stream = handler.GetStream();
+                using TcpClient client = new();
+                client.Connect(hostPlayer);
+                using NetworkStream stream = client.GetStream();
 
                 string allInput = ownPlaceing + "x" + ownDirection;
 
@@ -141,25 +106,28 @@ namespace SchiffeVersenken
             }
             catch
             {
-                Console.WriteLine("Something went wrong! Player 2 disconnected?");
+                Console.WriteLine("Something went wrong! Host disconnected?");
                 Thread.Sleep(1000);
-                while (true)
-                {
-                    try
-                    {
-                        using NetworkStream stream = handler.GetStream();
 
-                        string allInput = ownPlaceing + "x" + ownDirection;
+            }
 
-                        var connectionTestBytes = Encoding.UTF8.GetBytes(allInput);
-                        stream.Write(connectionTestBytes);
-                    }
-                    catch
-                    {
-                        Thread.Sleep(500);
-                    }
+        }
 
-                }
+        public static void ClientPlaying(string clientGuess)
+        {
+            try
+            {
+                using TcpClient client = new();
+                client.Connect(hostPlayer);
+                using NetworkStream stream = client.GetStream();
+
+                var connectionTestBytes = Encoding.UTF8.GetBytes(clientGuess);
+                stream.Write(connectionTestBytes);
+            }
+            catch
+            {
+                Console.WriteLine("Something went wrong! Host disconnected?");
+                Thread.Sleep(1000);
 
             }
 
