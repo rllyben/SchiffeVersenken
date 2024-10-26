@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using NAudio.Wave;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SchiffeVersenken
 {
@@ -52,7 +53,6 @@ namespace SchiffeVersenken
                 }
 
             }
-            PrintPlayfield(dumpPlayField, guessField);
             return;
         }
 
@@ -174,9 +174,10 @@ namespace SchiffeVersenken
             return;
         }
 
-        public void ShipPlaceing()
+        public void ShipPlaceing(byte mode)
         {
             Initalitaion();
+            PrintPlayfield(dumpPlayField, guessField);
 
             Console.WriteLine("Please set your Ships");
             Console.WriteLine();
@@ -186,12 +187,13 @@ namespace SchiffeVersenken
                 ushort x = 0;
                 ushort y = 0;
                 bool error = false;
+                string saveInput;
+                char direction;
                 do
                 {
 
                     Console.WriteLine($"Set your {ships[shipCount].GetName()}");
                     Console.WriteLine($"Please write the start Coordinate (Ax2)");
-                    string saveInput;
                     saveInput = Console.ReadLine();
                     saveInput.ToUpper();
                     try
@@ -225,7 +227,7 @@ namespace SchiffeVersenken
                 do
                 {
                     Console.WriteLine("In which direction should the ship face in (N,E,S,W)?");
-                    char direction = Console.ReadKey().KeyChar;
+                    direction = Console.ReadKey().KeyChar;
                     direction = Char.ToUpper(direction);
                     Console.WriteLine(direction);
 
@@ -334,10 +336,83 @@ namespace SchiffeVersenken
                     }
 
                 } while (innerError);
+                if (mode == 1)
+                {
+                    Host.HostShipPlaceing(saveInput, direction);
+                }
+                else if (mode == 2)
+                {
+                    Client.ClientPlaceing(saveInput, direction);
+                }
 
             }
 
         }
+
+        public void RemoteShipPlaceing(byte mode)
+        { 
+            Initalitaion();
+            if (mode == 1)
+                Console.WriteLine("Waiting for Host to place Ships...");
+            else if (mode == 2)
+                Console.WriteLine("Waiting for Client to place Ships...");
+
+            for (ushort shipCount = 0; shipCount < 10; shipCount++)
+            {
+                string remoteInput = "";
+                if (mode == 1)
+                {
+                    remoteInput = Client.HostPlaying();
+                }
+                else if (mode == 2)
+                {
+                    remoteInput = Host.ClientPlaying();
+                }
+                string[] parts = remoteInput.Split('x');
+
+                int x;
+                int y;
+                char firstPart = char.Parse(parts[0]);
+                firstPart = Char.ToUpper(firstPart);
+                x = (ushort)firstPart;
+                x -= 65;
+                y = ushort.Parse(parts[1]);
+                y--;
+
+                char direction = char.Parse(parts[2]);
+
+                switch (direction)
+                {
+                    case 'W':
+                        for (short west = 0; west < ships[shipCount].GetLength(); west++)
+                        {
+                            playField[x, y - west] = ships[shipCount];
+                        }
+                        break;
+                    case 'E':
+                        for (short east = 0; east < ships[shipCount].GetLength(); east++)
+                        {
+                            playField[x, y + east] = ships[shipCount];
+                        }
+                        break;
+                    case 'S':
+                        for (short south = 0; south < ships[shipCount].GetLength(); south++)
+                        {
+                            playField[x + south, y] = ships[shipCount];
+                        }
+                        break;
+                    case 'N':
+                        for (short north = 0; north < ships[shipCount].GetLength(); north++)
+                        {
+                            playField[x - north, y] = ships[shipCount];
+                        }
+                        break;
+                }
+
+            }
+
+        }
+
 
         public void Guessing(Ships[,] enemyField, ushort[,] enemyGuesses)
         {
@@ -392,6 +467,45 @@ namespace SchiffeVersenken
 
             } while (error);
 
+        }
+
+        public void RemoteGuessing(byte mode, Ships[,] enemyField, ushort[,] enemyGuesses)
+        {
+            string saveInput = "";
+            if (mode == 1)
+            {
+                saveInput = Host.ClientPlaying();
+            }
+            else if (mode == 2)
+            {
+                saveInput = Client.HostPlaying();
+            }
+            ushort x = 0;
+            ushort y = 0;
+            string[] parts = saveInput.Split('x');
+            char firstPart = char.Parse(parts[0]);
+            firstPart = Char.ToUpper(firstPart);
+            x = (ushort)firstPart;
+            x -= 65;
+            y = ushort.Parse(parts[1]);
+            y--;
+
+            guessField[x, y] = 1;
+            enemyField[x, y].LooseHealth();
+
+            if (enemyField[x, y].health == 0)
+            {
+                Console.WriteLine($"Your {enemyField[x, y].GetName()} got sunk!");
+                Thread.Sleep(1000);
+                sunkenShips++;
+            }
+            if (sunkenShips == 10)
+            {
+                Console.WriteLine("You lost the Game!");
+                Program.gameStart = false;
+                Console.ReadKey();
+            }
+            
         }
 
     }
