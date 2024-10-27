@@ -206,6 +206,7 @@ namespace SchiffeVersenken
                             firstPart = Char.ToUpper(firstPart);
                             x = (ushort)firstPart;
                             x -= 65;
+
                             y = ushort.Parse(parts[1]);
                             y--;
 
