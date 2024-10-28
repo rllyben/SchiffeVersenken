@@ -23,7 +23,7 @@ namespace SchiffeVersenken
             Console.ResetColor();
             Console.WriteLine();
             Console.WriteLine("Please enter the host ip-adress and the port (192.168.0.0:12345)");
-            
+
             string input = Console.ReadLine();
             string[] parts = input.Split(':');
             IPAddress ipAdress = IPAddress.Parse(parts[0]);
@@ -69,7 +69,9 @@ namespace SchiffeVersenken
                 catch
                 {
                     Program.PrintTitle();
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Connection to Host failed!");
+                    Console.ResetColor();
                     Thread.Sleep(1000);
                     error = true;
                 }
@@ -80,16 +82,27 @@ namespace SchiffeVersenken
         }
         public static string HostPlaying()
         {
-            using TcpClient client = new();
-            client.Connect(hostPlayer);
-            using NetworkStream stream = client.GetStream();
+            try
+            {
+                using TcpClient client = new();
+                client.Connect(hostPlayer);
+                using NetworkStream stream = client.GetStream();
 
-            var buffer = new byte[1024];
-            int received = stream.Read(buffer);
+                var buffer = new byte[1024];
+                int received = stream.Read(buffer);
 
-            var hostInput = Encoding.UTF8.GetString(buffer,0, received);
+                var hostInput = Encoding.UTF8.GetString(buffer, 0, received);
 
-            return hostInput;
+                return hostInput;
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Something went wrong! Host disconnected?");
+                Console.ResetColor();
+                Thread.Sleep(1000);
+                return "error";
+            }
         }
         public static void ClientPlaceing(string ownPlaceing, char ownDirection)
         {
@@ -106,13 +119,13 @@ namespace SchiffeVersenken
             }
             catch
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Something went wrong! Host disconnected?");
+                Console.ResetColor();
                 Thread.Sleep(1000);
-
             }
 
         }
-
         public static void ClientPlaying(string clientGuess)
         {
             try
@@ -126,7 +139,9 @@ namespace SchiffeVersenken
             }
             catch
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Something went wrong! Host disconnected?");
+                Console.ResetColor();
                 Thread.Sleep(1000);
 
             }

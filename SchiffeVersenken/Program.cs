@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace SchiffeVersenken
 {
@@ -10,30 +11,87 @@ namespace SchiffeVersenken
     {
         public static Playfield host = new Playfield();
         public static Playfield client = new Playfield();
-
         public static bool gameStart = false;
+        public static bool gameRun = true;
+        public static bool error = false;
+        public static int gamesPlayed = 0;
+        public static int gamesWon = 0;
+        public static int gamesLost = 0;
         static void Main(string[] args)
         {
+            Console.SetWindowSize(127, 34);
+            do
+            {
+                MainMenue();
+            }while(gameRun);
+
+        }
+        public static void MainMenue()
+        {
             PrintTitle();
-            Console.WriteLine("Do You want to play on this PC (<-) or over Network (->)?");
-            ConsoleKey modeSwitch = Console.ReadKey().Key;
+            Console.WriteLine("Main Menue");
+            Console.WriteLine();
+            string ausgabe = "Playing statistics ▲ \n" +
+                              "Play offline (coop over one PC) ◄ \n" +
+                              "Play online (coop over network) ► \n" +
+                              "Close Game ▼";
+            Console.WriteLine(ausgabe);
+            ConsoleKey modeSwitch = ConsoleKey.NoName;
+            do
+            {
+                try
+                {
+                    modeSwitch = Console.ReadKey().Key;
+                    error = false;
+                }
+                catch { error = true; }
+            } while (error);
+
             switch (modeSwitch)
             {
-                case ConsoleKey.LeftArrow: OfflinePlay();  break;
-                case ConsoleKey.RightArrow: NetwortkPlay();  break;
+                case ConsoleKey.LeftArrow: OfflinePlay(); break;
+                case ConsoleKey.RightArrow: NetwortkPlay(); break;
+                case ConsoleKey.UpArrow: PlayerStatistics(); break;
+                case ConsoleKey.DownArrow: gameRun = false; break;
             }
 
         }
-
+        public static void PlayerStatistics()
+        {
+            PrintTitle();
+            Console.WriteLine("Player statistics");
+            Console.WriteLine();
+            Console.WriteLine($"Games Played: {gamesPlayed} \n" +
+                              $"Games Won: {gamesWon} \n" +
+                              $"Games Lost: {gamesLost} \n\n" +
+                              "Back with any key");
+            Console.ReadKey();
+            MainMenue();
+        }
         public static void NetwortkPlay()
         {
             PrintTitle();
-            Console.WriteLine("Hello, do you want to <- host a game or want to join a game ->?");
-            ConsoleKey networkSwitch = Console.ReadKey().Key;
+            Console.WriteLine("Battleship Network");
+            Console.WriteLine();
+            Console.WriteLine("Host game ◄ \n" +
+                              "Join game ► \n" +
+                              "Back to Main Menue ▼");
+            ConsoleKey networkSwitch = ConsoleKey.NoName;
+            do
+            {
+                try
+                {
+                    networkSwitch = Console.ReadKey().Key;
+                    error = false;
+                }
+                catch { error = true; }
+            } while (error);
+
             switch (networkSwitch)
             {
                 case ConsoleKey.LeftArrow: Host.HostSetup(); break;
                 case ConsoleKey.RightArrow: Client.Connect(); break;
+                case ConsoleKey.DownArrow: MainMenue(); break;
             }
 
         }
@@ -46,9 +104,10 @@ namespace SchiffeVersenken
 
             while (gameStart)
             {
-                PrintTitle();
+                Console.Clear();
                 host.Guessing(1, client.playField, client.guessField);
-                PrintTitle();
+                host.PrintPlayfield(client.playField, client.guessField);
+                Console.WriteLine("Client is guessing...");
                 client.RemoteGuessing(1, host.playField, host.guessField);
             }
 
@@ -63,14 +122,14 @@ namespace SchiffeVersenken
 
             while (gameStart)
             {
-                PrintTitle();
                 host.RemoteGuessing(2, client.playField, client.guessField);
-                PrintTitle();
+                Console.Clear();
                 client.Guessing(2, host.playField, host.guessField);
+                client.PrintPlayfield(host.playField, host.guessField);
+                Console.WriteLine("Host is guessing...");
             }
 
         }
-
         public static void OfflinePlay()
         {
             PrintTitle();
@@ -97,7 +156,6 @@ namespace SchiffeVersenken
             }
 
         }
-
         public static void PrintTitle()
         {
             Console.Clear();

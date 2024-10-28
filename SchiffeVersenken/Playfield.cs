@@ -28,7 +28,6 @@ namespace SchiffeVersenken
         public Ships[,] playField = new Ships[10, 10];
         public ushort[,] guessField = new ushort[10, 10];
         private int sunkenShips = 0;
-
         private Ships[,] dumpPlayField = new Ships[10, 10];
         private void Initalitaion()
         {
@@ -55,7 +54,6 @@ namespace SchiffeVersenken
             }
             return;
         }
-
         public void PrintPlayfield(Ships[,] enemyPlayField, ushort[,] enemyGuessField)
         {
             Console.Clear();
@@ -102,7 +100,9 @@ namespace SchiffeVersenken
                     else
                     {
                         Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Something went wrong, reprinting Field ...");
+                        Console.ResetColor();
                         Thread.Sleep(1000);
                         PrintPlayfield(enemyPlayField, enemyGuessField);
                     }
@@ -155,15 +155,16 @@ namespace SchiffeVersenken
                     }
                     else if (playField[outer, inner] != Empty && enemyGuessField[outer, inner] == 1)
                     {
-                        Console.BackgroundColor = ConsoleColor.DarkGray;
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("XX");
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        Console.Write("  ");
                         Console.ResetColor();
                     }
                     else
                     {
                         Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Something went wrong, reprinting Field ...");
+                        Console.ResetColor();
                         Thread.Sleep(1000);
                         PrintPlayfield(enemyPlayField, enemyGuessField);
                     }
@@ -173,7 +174,6 @@ namespace SchiffeVersenken
             }
             return;
         }
-
         public void ShipPlaceing(byte mode)
         {
             Initalitaion();
@@ -195,7 +195,7 @@ namespace SchiffeVersenken
                     do
                     {
 
-                        Console.WriteLine($"Set your {ships[shipCount].GetName()}");
+                        Console.WriteLine($"Set your {ships[shipCount].GetName()} [{ships[shipCount].GetLength()}]");
                         Console.WriteLine($"Please write the start Coordinate (Ax2)");
                         saveInput = Console.ReadLine();
                         saveInput.ToUpper();
@@ -255,7 +255,9 @@ namespace SchiffeVersenken
                                     }
                                     catch
                                     {
+                                        Console.ForegroundColor = ConsoleColor.Red;
                                         Console.WriteLine("Wrong input, you're getting deported to France! Redo all input! :3");
+                                        Console.ResetColor();
                                         Thread.Sleep(5000);
                                         innerError = true;
                                     }
@@ -277,7 +279,9 @@ namespace SchiffeVersenken
                                     }
                                     catch
                                     {
+                                        Console.ForegroundColor = ConsoleColor.Red;
                                         Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                        Console.ResetColor();
                                         Thread.Sleep(5000);
                                         innerError = true;
                                     }
@@ -299,7 +303,9 @@ namespace SchiffeVersenken
                                     }
                                     catch
                                     {
+                                        Console.ForegroundColor = ConsoleColor.Red;
                                         Console.WriteLine("Wrong input! You went too far south, now the Pinguins are after you and you forgot your winterjacket! Redo everything! :p");
+                                        Console.ResetColor();
                                         Thread.Sleep(5000);
                                         innerError = true;
                                     }
@@ -321,7 +327,9 @@ namespace SchiffeVersenken
                                     }
                                     catch
                                     {
+                                        Console.ForegroundColor = ConsoleColor.Red;
                                         Console.WriteLine("Wrong input, your browser data was sent to the local church, a priest is on his way to you! please redo everything!");
+                                        Console.ResetColor();
                                         Thread.Sleep(5000);
                                         innerError = true;
                                     }
@@ -336,6 +344,7 @@ namespace SchiffeVersenken
                             Console.ResetColor();
                             Thread.Sleep(5000);
                             shipCount--;
+                            innerError = true;
                         }
 
                     } while (innerError);
@@ -353,7 +362,6 @@ namespace SchiffeVersenken
             }
 
         }
-
         public void RemoteShipPlaceing(byte mode)
         {
             Initalitaion();
@@ -417,8 +425,6 @@ namespace SchiffeVersenken
             }
 
         }
-
-
         public void Guessing(byte mode, Ships[,] enemyField, ushort[,] enemyGuesses)
         {
             PrintPlayfield(enemyField, enemyGuesses);
@@ -475,7 +481,6 @@ namespace SchiffeVersenken
             else if (mode == 2)
                 Client.ClientPlaying(saveInput);
         }
-
         public void RemoteGuessing(byte mode, Ships[,] enemyField, ushort[,] enemyGuesses)
         {
             string saveInput = "";
