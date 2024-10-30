@@ -15,6 +15,7 @@ namespace SchiffeVersenken
         private static bool error = false;
         private static IPEndPoint hostPlayer;
         private static IPEndPoint clientPlayer;
+        private static int playfieldSize;
         public static void Connect()
         {
             Program.PrintTitle();
@@ -54,8 +55,8 @@ namespace SchiffeVersenken
 
                     int hostConnectionTest = stream.Read(buffer);
                     var hostTest = Encoding.UTF8.GetString(buffer, 0, hostConnectionTest);
-
-                    if (hostTest == localIpAddress.ToString())
+                    playfieldSize = int.Parse(hostTest);
+                    if (playfieldSize > 10)
                     {
                         listener = new(hostPlayer);
                         Console.WriteLine("Connected successfully to Host");
@@ -77,7 +78,8 @@ namespace SchiffeVersenken
                 }
 
             } while (error);
-            Thread.Sleep(1000);
+            Program.client.Initalitaion(playfieldSize);
+            Program.host.Initalitaion(playfieldSize);
             Program.ClientPlay();
         }
         public static string HostPlaying()
@@ -103,6 +105,7 @@ namespace SchiffeVersenken
                 Thread.Sleep(1000);
                 return "error";
             }
+
         }
         public static void ClientPlaceing(string ownPlaceing, char ownDirection)
         {

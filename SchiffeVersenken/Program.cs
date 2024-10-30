@@ -132,14 +132,37 @@ namespace SchiffeVersenken
         }
         public static void OfflinePlay()
         {
-            PrintTitle();
             Playfield player1 = new Playfield();
+            Playfield player2 = new Playfield();
+            do
+            {
+                PrintTitle();
+                Console.WriteLine("How long do you want the edges of the playfield to be? (At least 10)");
+                try
+                {
+                    int playfieldSize = int.Parse(Console.ReadLine());
+                    if (playfieldSize < 10)
+                        throw new Exception("Playfield to small");
+                    error = false;
+                    
+                    player1.Initalitaion(playfieldSize);
+                    player2.Initalitaion(playfieldSize);
+                }
+                catch
+                {
+                    Console.WriteLine("Wrong input!");
+                    error = true;
+                    Thread.Sleep(1000);
+                }
+
+            } while (error);
+
+            PrintTitle();
             player1.ShipPlaceing(0);
             Console.Clear();
             PrintTitle();
             Console.WriteLine("Now Player 2");
             Console.ReadKey();
-            Playfield player2 = new Playfield();
             player2.ShipPlaceing(0);
             Console.Clear();
             gameStart = true;

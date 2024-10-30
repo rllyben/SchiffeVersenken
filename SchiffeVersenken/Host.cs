@@ -11,14 +11,33 @@ namespace SchiffeVersenken
     internal class Host
     {
         private static IPAddress localIpAddress;
-        private static IPAddress clientIpAddress;
         private static int port;
         private static TcpListener listener;
-        private static TcpClient client;
-        private static IPEndPoint clientPlayer;
         private static bool error = false;
+        private static int playfieldSize;
         public static void HostSetup()
         {
+            do
+            {
+                Program.PrintTitle();
+                Console.WriteLine("How long do you want the edges of the playfield to be? (At least 10)");
+                try
+                {
+                    playfieldSize = int.Parse(Console.ReadLine());
+                    if (playfieldSize < 10)
+                        throw new Exception("Playfield to small");
+                    error = false;
+
+                }
+                catch
+                {
+                    Console.WriteLine("Wrong input!");
+                    error = true;
+                    Thread.Sleep(1000);
+                }
+
+            } while (error);
+
             localIpAddress = IPAddress.Parse(Utils.GetLocalIPAddress());
             port = Utils.GetAvailablePort();
             IPEndPoint ipEndPoint = new(localIpAddress, port);
@@ -48,25 +67,27 @@ namespace SchiffeVersenken
                     var buffer = new byte[1024];
                     int received = stream.Read(buffer);
 
-                    var clientMessage = Encoding.UTF8.GetString(buffer, 0, received);
+                    var clientMessage = Encoding.UTF8.GetString(buffer, 0, playfieldSize);
                     var backTest = Encoding.UTF8.GetBytes(clientMessage);
                     stream.Write(backTest);
 
                     IPAddress clientAddress = IPAddress.Parse(clientMessage);
-                    clientPlayer = new(clientAddress, port);
-
+                    error = false;
                 }
                 catch
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Something went wrong! Client disconnected?");
                     Console.ResetColor();
+                    error = true;
                     Thread.Sleep(1000);
                 }
 
             } while (error);
             Console.WriteLine("Client connected successfully!");
             Thread.Sleep(1000);
+            Program.host.Initalitaion(playfieldSize);
+            Program.client.Initalitaion(playfieldSize);
             Program.HostPlay();
 
         }

@@ -12,39 +12,51 @@ namespace SchiffeVersenken
 {
     internal class Playfield
     {
-        Ships battleship = new Ships(5, "battleship");
-        Ships cruiser1 = new Ships(4, "cruiser");
-        Ships cruiser2 = new Ships(4, "cruiser");
-        Ships destroyer1 = new Ships(3, "destroyer");
-        Ships destroyer2 = new Ships(3, "destroyer");
-        Ships destroyer3 = new Ships(3, "destroyer");
-        Ships UBoat1 = new Ships(2, "U-Boat");
-        Ships UBoat2 = new Ships(2, "U-Boat");
-        Ships UBoat3 = new Ships(2, "U-Boat");
-        Ships UBoat4 = new Ships(2, "U-Boat");
         Ships Empty = new Ships(0, "Nothing");
 
-        private Ships[] ships = new Ships[10];
-        public Ships[,] playField = new Ships[10, 10];
-        public ushort[,] guessField = new ushort[10, 10];
+        private Ships[] ships;
+        public Ships[,] playField;
+        public ushort[,] guessField;
         private int sunkenShips = 0;
-        private Ships[,] dumpPlayField = new Ships[10, 10];
-        private void Initalitaion()
+        private Ships[,] dumpPlayField;
+        private int shipCounter = 0;
+        private int fieldSize = 0;
+        public void Initalitaion(int size)
         {
-            ships[0] = battleship;
-            ships[1] = cruiser1;
-            ships[2] = cruiser2;
-            ships[3] = destroyer1;
-            ships[4] = destroyer2;
-            ships[5] = destroyer3;
-            ships[6] = UBoat1;
-            ships[7] = UBoat2;
-            ships[8] = UBoat3;
-            ships[9] = UBoat4;
+            fieldSize = size;
+            ships = new Ships[size];
+            playField = new Ships[size, size];
+            guessField = new ushort[size, size];
+            dumpPlayField = new Ships[size, size];
 
-            for (int outer = 0; outer < 10; outer++)
+            for (int count = 0; count < size / 10; count++)
             {
-                for (int inner = 0; inner < 10; inner++)
+                Ships battleship = new Ships(5, "battleship");
+                ships[shipCounter] = battleship;
+                shipCounter++;
+            }
+            for (int count = 0; count < size / 5; count++)
+            {
+                Ships cruiser = new Ships(4, "cruiser");
+                ships[shipCounter] = cruiser;
+                shipCounter++;
+            }
+            for (int count = 0; count < size / 3; count++)
+            {
+                Ships destroyer = new Ships(3, "destroyer");
+                ships[shipCounter] = destroyer;
+                shipCounter++;
+            }
+            for (int count = 0; count < size / 2.5; count++)
+            {
+                Ships UBoat = new Ships(2, "U-Boat");
+                ships[shipCounter] = UBoat;
+                shipCounter++;
+            }
+
+            for (int outer = 0; outer < size; outer++)
+            {
+                for (int inner = 0; inner < size; inner++)
                 {
                     playField[outer, inner] = Empty;
                     guessField[outer, inner] = 0;
@@ -59,7 +71,7 @@ namespace SchiffeVersenken
             Console.Clear();
             Console.WriteLine("Gegnerisches Feld");
             Console.WriteLine();
-            for (int outer = -1; outer < 10; outer++)
+            for (int outer = -1; outer < fieldSize; outer++)
             {
                 int outerChar = outer + 65;
                 char zeichen = (char)outerChar;
@@ -71,7 +83,7 @@ namespace SchiffeVersenken
                 }
                 else Console.Write("  ");
 
-                for (int inner = 0; inner < 10; inner++)
+                for (int inner = 0; inner < fieldSize; inner++)
                 {
                     if (outer == -1)
                     {
@@ -115,7 +127,7 @@ namespace SchiffeVersenken
             Console.WriteLine();
             Console.WriteLine("Eigenes Feld");
             Console.WriteLine();
-            for (int outer = -1; outer < 10; outer++)
+            for (int outer = -1; outer < fieldSize; outer++)
             {
                 int outerChar = outer + 65;
                 char zeichen = (char)outerChar;
@@ -127,7 +139,7 @@ namespace SchiffeVersenken
                 }
                 else Console.Write("  ");
 
-                for (int inner = 0; inner < 10; inner++)
+                for (int inner = 0; inner < fieldSize; inner++)
                 {
                     if (outer == -1)
                     {
@@ -176,13 +188,12 @@ namespace SchiffeVersenken
         }
         public void ShipPlaceing(byte mode)
         {
-            Initalitaion();
             PrintPlayfield(dumpPlayField, guessField);
 
             Console.WriteLine("Please set your Ships");
             Console.WriteLine();
 
-            for (ushort shipCount = 0; shipCount < 10; shipCount++)
+            for (ushort shipCount = 0; shipCount < shipCounter; shipCount++)
             {
                 ushort x = 0;
                 ushort y = 0;
@@ -210,7 +221,7 @@ namespace SchiffeVersenken
                             y = ushort.Parse(parts[1]);
                             y--;
 
-                            if (x > 10 || y > 10 || playField[x, y] != Empty)
+                            if (x > fieldSize || y > fieldSize || playField[x, y] != Empty)
                                 throw new Exception("Out of bounds");
                             error = false;
                         }
@@ -364,13 +375,12 @@ namespace SchiffeVersenken
         }
         public void RemoteShipPlaceing(byte mode)
         {
-            Initalitaion();
             if (mode == 1)
                 Console.WriteLine("Waiting for Host to place Ships...");
             else if (mode == 2)
                 Console.WriteLine("Waiting for Client to place Ships...");
 
-            for (ushort shipCount = 0; shipCount < 10; shipCount++)
+            for (ushort shipCount = 0; shipCount < shipCounter; shipCount++)
             {
                 string remoteInput = "";
                 if (mode == 1)
@@ -458,7 +468,7 @@ namespace SchiffeVersenken
                         Thread.Sleep(1000);
                         sunkenShips++;
                     }
-                    if (sunkenShips == 10)
+                    if (sunkenShips == shipCounter)
                     {
                         Console.WriteLine("GZ! You won the Game!");
                         Program.gameStart = false;
@@ -511,7 +521,7 @@ namespace SchiffeVersenken
                 Thread.Sleep(1000);
                 sunkenShips++;
             }
-            if (sunkenShips == 10)
+            if (sunkenShips == shipCounter)
             {
                 Console.WriteLine("You lost the Game!");
                 Program.gameStart = false;
