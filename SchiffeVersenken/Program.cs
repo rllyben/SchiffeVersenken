@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace SchiffeVersenken
 {
@@ -11,6 +12,7 @@ namespace SchiffeVersenken
     {
         public static Playfield host = new Playfield();
         public static Playfield client = new Playfield();
+        public static Program debugger = new Program();
         public static bool gameStart = false;
         public static bool gameRun = true;
         public static bool error = false;
@@ -23,9 +25,13 @@ namespace SchiffeVersenken
             do
             {
                 MainMenue();
-            }while(gameRun);
+            } while (gameRun);
 
         }
+        /// <summary>
+        /// Prints and handels the Main Menue
+        /// with ConsoleKey.Arrow
+        /// </summary>
         public static void MainMenue()
         {
             PrintTitle();
@@ -36,26 +42,74 @@ namespace SchiffeVersenken
                               "Play online (coop over network) ► \n" +
                               "Close Game ▼";
             Console.WriteLine(ausgabe);
-            ConsoleKey modeSwitch = ConsoleKey.NoName;
+            bool wait = true;
             do
             {
-                try
+                ConsoleKey modeSwitch = Console.ReadKey().Key;
+                switch (modeSwitch)
                 {
-                    modeSwitch = Console.ReadKey().Key;
-                    error = false;
+                    case ConsoleKey.LeftArrow: wait = false; OfflinePlay(); break;
+                    case ConsoleKey.RightArrow: wait = false; NetwortkPlay(); break;
+                    case ConsoleKey.UpArrow: wait = false; PlayerStatistics(); break;
+                    case ConsoleKey.DownArrow: wait = false; gameRun = false; break;
+                    case ConsoleKey.D: wait = false; debugger.DebugingMode(); break;
                 }
-                catch { error = true; }
-            } while (error);
 
-            switch (modeSwitch)
+            } while (wait);
+
+        }
+        /// <summary>
+        /// Handels the debuging mode of the game
+        /// </summary>
+        public void DebugingMode()
+        {
+            Playfield debuging = new Playfield();
+            while (true)
             {
-                case ConsoleKey.LeftArrow: OfflinePlay(); break;
-                case ConsoleKey.RightArrow: NetwortkPlay(); break;
-                case ConsoleKey.UpArrow: PlayerStatistics(); break;
-                case ConsoleKey.DownArrow: gameRun = false; break;
+                Console.Clear();
+                Console.WriteLine("Battleship Debugger\n" +
+                                  "1. Initialisation\n");
+                int choise = 0;
+                do
+                {
+                    try
+                    {
+                        choise = int.Parse(Console.ReadLine());
+                        error = false;
+                    }
+                    catch { error = true; }
+
+                    switch (choise)
+                    {
+                        case 0: ExitDebugingMode(); error = false; break;
+                        case 1: debuging.Initalitaion(0, true); error = false; break;
+                    }
+
+                } while (error);
+
             }
 
         }
+        /// <summary>
+        /// Resets all changes done in the debuging mode
+        /// and opens the Main Menue
+        /// </summary>
+        private static void ExitDebugingMode()
+        {
+            debugger = new Program();
+            error = false;
+            bool gameRun = true;
+            bool gameStart = false;
+            gamesPlayed = 0;
+            gamesWon = 0;
+            gamesLost = 0;
+            client = new Playfield();
+            host = new Playfield();
+            MainMenue();
+        }
+        /// <summary>
+        /// Prints the Playerstatistics
+        /// </summary>
         public static void PlayerStatistics()
         {
             PrintTitle();
@@ -68,10 +122,13 @@ namespace SchiffeVersenken
             Console.ReadKey();
             MainMenue();
         }
+        /// <summary>
+        /// Handels the choise for network play for host or joining a game
+        /// </summary>
         public static void NetwortkPlay()
         {
             PrintTitle();
-            Console.WriteLine("Battleship Network");
+            Console.WriteLine("Battleship Networkplaymode");
             Console.WriteLine();
             Console.WriteLine("Host game ◄ \n" +
                               "Join game ► \n" +
@@ -95,6 +152,9 @@ namespace SchiffeVersenken
             }
 
         }
+        /// <summary>
+        /// Handels the hostsite gameplay (NOT for connecting between the clients(found in Host.cs))
+        /// </summary>
         public static void HostPlay()
         {
             host.ShipPlaceing(1);
@@ -106,12 +166,23 @@ namespace SchiffeVersenken
             {
                 Console.Clear();
                 host.Guessing(1, client.playField, client.guessField);
-                host.PrintPlayfield(client.playField, client.guessField);
-                Console.WriteLine("Client is guessing...");
-                client.RemoteGuessing(1, host.playField, host.guessField);
+                host.PrintEnemyPlayfield(client.playField, client.guessField);
+                if (gameStart)
+                {
+                    Console.WriteLine("Client is guessing...");
+                    client.RemoteGuessing(1, host.playField, host.guessField);
+                }
+                else
+                {
+
+                }
+
             }
 
         }
+        /// <summary>
+        /// Handels the clientsite gameplay (NOT for connecting between the clients(found in Client.cs))
+        /// </summary>
         public static void ClientPlay()
         {
             PrintTitle();
@@ -122,14 +193,25 @@ namespace SchiffeVersenken
 
             while (gameStart)
             {
-                host.RemoteGuessing(2, client.playField, client.guessField);
-                Console.Clear();
-                client.Guessing(2, host.playField, host.guessField);
-                client.PrintPlayfield(host.playField, host.guessField);
                 Console.WriteLine("Host is guessing...");
+                host.RemoteGuessing(2, client.playField, client.guessField);
+                if (gameStart)
+                {
+                    Console.Clear();
+                    client.Guessing(2, host.playField, host.guessField);
+                    client.PrintEnemyPlayfield(host.playField, host.guessField);
+                }
+                else
+                {
+
+                }
+
             }
 
         }
+        /// <summary>
+        /// Handels the gameplay on one computer for playing offline
+        /// </summary>
         public static void OfflinePlay()
         {
             Playfield player1 = new Playfield();
@@ -143,14 +225,16 @@ namespace SchiffeVersenken
                     int playfieldSize = int.Parse(Console.ReadLine());
                     if (playfieldSize < 10)
                         throw new Exception("Playfield to small");
-                    error = false;
-                    
+
                     player1.Initalitaion(playfieldSize);
                     player2.Initalitaion(playfieldSize);
+                    error = false;
                 }
                 catch
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Wrong input!");
+                    Console.ForegroundColor = ConsoleColor.White;
                     error = true;
                     Thread.Sleep(1000);
                 }
@@ -173,18 +257,22 @@ namespace SchiffeVersenken
                 Console.WriteLine("Player 1s Turn");
                 Console.ReadKey();
                 player1.Guessing(0, player2.playField, player2.guessField);
+                PrintTitle();
                 Console.WriteLine("Player 2s Turn");
                 Console.ReadKey();
                 player2.Guessing(0, player1.playField, player1.guessField);
             }
 
         }
+        /// <summary>
+        /// Prints the title of the game
+        /// </summary>
         public static void PrintTitle()
         {
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine("Battle Ship");
-            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             Console.WriteLine();
             return;

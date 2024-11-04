@@ -14,7 +14,10 @@ namespace SchiffeVersenken
         private static int port;
         private static TcpListener listener;
         private static bool error = false;
-        private static int playfieldSize;
+        private static int playfieldSize = 0;
+        /// <summary>
+        /// Handels the playfield size for online games and the specific port choise (automatic porthandling in Utils.cs)
+        /// </summary>
         public static void HostSetup()
         {
             do
@@ -37,9 +40,39 @@ namespace SchiffeVersenken
                 }
 
             } while (error);
+            do
+            {
+                Console.WriteLine("Do you want to coose a Port? (y/N)");
+                char choise = Console.ReadKey().KeyChar;
+                choise = char.ToLower(choise);
+                if (choise == 'y')
+                {
+                    Console.WriteLine("Pleader enter your Port (recomended: 49152 - 65535)");
+                    try
+                    {
+                        port = int.Parse(Console.ReadLine());
+                        error = false;
+                    }
+                    catch
+                    {
+                        error = true;
+                    }
+                }
+                else
+                {
+                    port = Utils.GetAvailablePort();
+                    error = false;
+                }
 
+            } while (error);
+            HostConnection();
+        }
+        /// <summary>
+        /// Handels the connecting between host and client and sends the client the playfield size
+        /// </summary>
+        public static void HostConnection()
+        { 
             localIpAddress = IPAddress.Parse(Utils.GetLocalIPAddress());
-            port = Utils.GetAvailablePort();
             IPEndPoint ipEndPoint = new(localIpAddress, port);
             listener = new(ipEndPoint);
 
@@ -48,11 +81,10 @@ namespace SchiffeVersenken
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"Your host IP-Adress and Port is {ipEndPoint}");
-            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             listener.Start();
             Console.WriteLine("Waiting for connection...");
-
             do
             {
                 try
@@ -65,20 +97,27 @@ namespace SchiffeVersenken
                     stream.Write(connectionTestBytes);
 
                     var buffer = new byte[1024];
-                    int received = stream.Read(buffer);
+                    Thread.Sleep(100);
 
-                    var clientMessage = Encoding.UTF8.GetString(buffer, 0, playfieldSize);
-                    var backTest = Encoding.UTF8.GetBytes(clientMessage);
-                    stream.Write(backTest);
+                    string playfieldMassage = playfieldSize.ToString();
+                    var playfieldbytes = Encoding.UTF8.GetBytes(playfieldMassage);
+                    stream.Write(playfieldbytes);
 
-                    IPAddress clientAddress = IPAddress.Parse(clientMessage);
+                    using TcpClient errorHandler = listener.AcceptTcpClient();
+                    using NetworkStream errorMassage = errorHandler.GetStream();
+                    int received = errorMassage.Read(buffer);
+                    var hostTest = Encoding.UTF8.GetString(buffer, 0, received);
+
+                    if (hostTest == "error")
+                        throw new Exception("Client threw exception");
+
                     error = false;
                 }
                 catch
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Something went wrong! Client disconnected?");
-                    Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.White;
                     error = true;
                     Thread.Sleep(1000);
                 }
@@ -89,8 +128,12 @@ namespace SchiffeVersenken
             Program.host.Initalitaion(playfieldSize);
             Program.client.Initalitaion(playfieldSize);
             Program.HostPlay();
-
         }
+        /// <summary>
+        /// Handels the sending of the shipplacement input to the client
+        /// </summary>
+        /// <param name="ownPlaceing">the coordinates the ship was placed on</param>
+        /// <param name="ownDirection">the direction of the placed ship</param>
         public static void HostShipPlaceing(string ownPlaceing, char ownDirection)
         {
             using TcpClient handler = listener.AcceptTcpClient();
@@ -107,11 +150,16 @@ namespace SchiffeVersenken
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Something went wrong! Client disconnected?");
-                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.White;
+                Program.MainMenue();
                 Thread.Sleep(1000);
             }
 
         }
+        /// <summary>
+        /// Sends the coordinates the host guessed to the client
+        /// </summary>
+        /// <param name="hostGuess"></param>
         public static void HostPlaying(string hostGuess)
         {
             using TcpClient handler = listener.AcceptTcpClient();
@@ -126,11 +174,16 @@ namespace SchiffeVersenken
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Something went wrong! Client disconnected?");
-                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.White;
+                Program.MainMenue();
                 Thread.Sleep(1000);
             }
 
         }
+        /// <summary>
+        /// reads the input from the client shipplacement
+        /// </summary>
+        /// <returns>the client imput</returns>
         public static string ClientPlaying()
         {
             try
@@ -150,7 +203,7 @@ namespace SchiffeVersenken
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Something went wrong! Client disconnected?");
-                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.White;
                 Thread.Sleep(1000);
                 return "error";
             }
